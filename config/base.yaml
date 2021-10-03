@@ -1,0 +1,9 @@
+
+defaults:
+  - train: train
+  - data: debug
+  - tokenizer: bpemb
+  - model: base
+
+checkpoint_save_path: 'checkpoints'
+mode: debug

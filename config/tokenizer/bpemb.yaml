@@ -1,0 +1,5 @@
+
+_target_: bpemb.BPEmb
+lang: 'ru'
+dim: 200
+vs: 200000
