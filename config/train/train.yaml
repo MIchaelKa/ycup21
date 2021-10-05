@@ -1,7 +1,7 @@
-batch_size_train: 8
-batch_size_val: 4
+batch_size_train: ${mode.batch_size_train}
+batch_size_val: ${mode.batch_size_val}
 
 trainer_params:
-  gpus: 0 # local
-  max_epochs: 2 # debug
-  log_every_n_steps: 1 # debug
+  gpus: 0
+  max_epochs: ${mode.max_epochs}
+  log_every_n_steps: ${mode.log_every_n_steps}

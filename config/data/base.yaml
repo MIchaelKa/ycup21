@@ -1,0 +1,16 @@
+dataloader_workers: 0
+split_ratio: 0.9
+
+metadata:
+  metadata_directory: ${path.metadata_directory}
+  dataset_size: ${mode.dataset_size}
+
+train:
+  images_directory: ${path.images_directory}
+  tokenizer: ${tokenizer}
+  randomize: True
+
+val:
+  images_directory: ${path.images_directory}
+  tokenizer: ${tokenizer}
+  randomize: False

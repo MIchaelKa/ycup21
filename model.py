@@ -9,7 +9,6 @@ from torch import nn
 from bpemb import BPEmb
 from segmentation_models_pytorch.encoders import get_encoder
 
-
 class ModalityEncoder(nn.Module):
     """Simple wrapper around encoder, adds output projection layer.
     """

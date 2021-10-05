@@ -3,12 +3,18 @@ from torchvision import transforms
 from torch.utils.data import Dataset
 from torch.utils.data._utils.collate import default_collate
 
+import os
 import numpy as np
 from PIL import Image
 from pathlib import Path
 from tqdm.auto import tqdm
 import jsonlines
 import json
+
+from hydra.utils import instantiate
+
+import logging
+logger = logging.getLogger(__name__)
 
 def get_image_transform(randomize: bool):
     normalize = transforms.Normalize(
@@ -41,43 +47,61 @@ def text_collate_fn(items):
         'offsets': torch.tensor(offsets[:-1]).cumsum(dim=0)
     }
 
+def prepare_metadata(
+    metadata_directory,
+    dataset_size=None,
+    ):
+
+    data = []
+
+    # id_to_remove.npy  index_to_remove.npy
+    id_to_remove = np.load(os.path.join(metadata_directory, 'id_to_remove.npy'))
+
+    metadata_file = os.path.join(metadata_directory, 'metadata.json')
+
+    with open(metadata_file) as json_file:
+        json_strings = json_file.readlines()
+    for json_string in json_strings[:dataset_size]:
+        metadata = json.loads(json_string)
+        image = metadata['image']
+        if image not in id_to_remove:
+            data.append((metadata['image'], metadata['queries']))
+
+    logger.info(f'metadata size: {len(data)}')
+        
+    return data
+
+def get_train_val(metadata, cfg):
+
+    ratio = cfg.data.split_ratio
+    metadata_len = len(metadata)
+    train_size = int(ratio * metadata_len)
+
+    train_metadata = metadata[:train_size]
+    val_metadata = metadata[train_size:]
+
+    train_dataset = I2TDataset(train_metadata, **cfg.data.train)
+    val_dataset = I2TDataset(val_metadata, **cfg.data.val)
+
+    logger.info(f'dataset size, train: {len(train_dataset)}, valid: {len(val_dataset)}')
+
+    return train_dataset, val_dataset
+
 class I2TDataset(Dataset):
     def __init__(
         self,
-        metadata_file,
+        metadata,
         images_directory,
         tokenizer,
-        read_jsonlines = True,
-        start = 0,
-        end = None,
-        randomize = True,
-        tqdm_load = False
+        randomize = True
     ):
         super().__init__()
-        self.data = []
-
-        skip_images = [13,44]
-
-        if read_jsonlines:
-            with jsonlines.open(metadata_file) as reader:
-                if tqdm_load:
-                    reader = tqdm(reader)
-                for obj in reader:
-                    self.data.append((obj['image'], obj['queries']))
-            self.data = self.data[slice(start, end)]
-        else:
-            with open(metadata_file) as json_file:
-                json_strings = json_file.readlines()
-            for json_string in json_strings[start:end]:
-                metadata = json.loads(json_string)
-                image = metadata['image']
-                if image not in skip_images:
-                    self.data.append((metadata['image'], metadata['queries']))            
-
+        self.data = metadata
         self.images_directory = Path(images_directory)
         self.randomize = randomize
         self.image_transform = get_image_transform(randomize=randomize)
-        self.tokenizer = tokenizer
+        # TODO: move out
+        self.tokenizer = instantiate(tokenizer)
 
     def __len__(self):
         return len(self.data)

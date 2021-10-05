@@ -6,15 +6,15 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 
 from system import I2T
+from dataset import I2TDataset, prepare_metadata, get_train_val
 
 import logging
 logger = logging.getLogger(__name__)
 
 def train(cfg: DictConfig):
-    train_dataset = hydra.utils.instantiate(cfg.data.train)
-    val_dataset = hydra.utils.instantiate(cfg.data.val)
+    metadata = prepare_metadata(**cfg.data.metadata)
 
-    logger.info(f'dataset size, train: {len(train_dataset)}, valid: {len(val_dataset)}')
+    train_dataset, val_dataset = get_train_val(metadata, cfg)
 
     dataloader_workers = cfg.data.dataloader_workers
 
