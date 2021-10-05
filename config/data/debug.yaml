@@ -1,0 +1,31 @@
+
+metadata_file: '/Users/michaelka/Developer/ml/projects/ycup21/data/metadata.json'
+images_directory: '/Users/michaelka/Developer/ml/projects/ycup21/images/images'
+
+num_train_samples: 32
+dataset_size: 48
+
+dataloader_workers: 0
+
+train:
+  _target_: dataset.I2TDataset
+  metadata_file: ${data.metadata_file}
+  images_directory: ${data.images_directory}
+  tokenizer: ${tokenizer}
+  read_jsonlines: False
+  start: 0
+  end: ${data.num_train_samples}
+  randomize: True
+
+val:
+  _target_: dataset.I2TDataset
+  metadata_file: ${data.metadata_file}
+  images_directory: ${data.images_directory}
+  tokenizer: ${tokenizer}
+  read_jsonlines: False
+  start: ${data.num_train_samples}
+  end: ${data.dataset_size}
+  randomize: False
+
+
+# /Users/michaelka/Developer/ml/projects/ycup21/data
