@@ -1,4 +1,4 @@
-dataloader_workers: 0
+dataloader_workers: ${path.dataloader_workers}
 split_ratio: 0.9
 
 metadata:
@@ -7,10 +7,8 @@ metadata:
 
 train:
   images_directory: ${path.images_directory}
-  tokenizer: ${tokenizer}
   randomize: True
 
 val:
   images_directory: ${path.images_directory}
-  tokenizer: ${tokenizer}
   randomize: False

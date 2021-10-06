@@ -7,8 +7,6 @@ import os
 import numpy as np
 from PIL import Image
 from pathlib import Path
-from tqdm.auto import tqdm
-import jsonlines
 import json
 
 from hydra.utils import instantiate
@@ -71,7 +69,7 @@ def prepare_metadata(
         
     return data
 
-def get_train_val(metadata, cfg):
+def get_train_val(metadata, tokenizer, cfg):
 
     ratio = cfg.data.split_ratio
     metadata_len = len(metadata)
@@ -80,8 +78,8 @@ def get_train_val(metadata, cfg):
     train_metadata = metadata[:train_size]
     val_metadata = metadata[train_size:]
 
-    train_dataset = I2TDataset(train_metadata, **cfg.data.train)
-    val_dataset = I2TDataset(val_metadata, **cfg.data.val)
+    train_dataset = I2TDataset(train_metadata, tokenizer, **cfg.data.train)
+    val_dataset = I2TDataset(val_metadata, tokenizer, **cfg.data.val)
 
     logger.info(f'dataset size, train: {len(train_dataset)}, valid: {len(val_dataset)}')
 
@@ -91,18 +89,17 @@ class I2TDataset(Dataset):
     def __init__(
         self,
         metadata,
-        images_directory,
         tokenizer,
+        images_directory,
         randomize = True
     ):
         super().__init__()
         self.data = metadata
+        self.tokenizer = tokenizer
         self.images_directory = Path(images_directory)
         self.randomize = randomize
         self.image_transform = get_image_transform(randomize=randomize)
-        # TODO: move out
-        self.tokenizer = instantiate(tokenizer)
-
+        
     def __len__(self):
         return len(self.data)
 

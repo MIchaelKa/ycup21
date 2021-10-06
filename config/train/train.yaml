@@ -3,5 +3,6 @@ batch_size_val: ${mode.batch_size_val}
 
 trainer_params:
   gpus: 0
+  deterministic: True
   max_epochs: ${mode.max_epochs}
   log_every_n_steps: ${mode.log_every_n_steps}

@@ -1,2 +1,3 @@
 metadata_directory: '/content/drive/MyDrive/ai/ycup21/data/'
 images_directory: '/content/images'
+dataloader_workers: 0

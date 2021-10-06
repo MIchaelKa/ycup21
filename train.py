@@ -4,17 +4,24 @@ from omegaconf import DictConfig
 from torch.utils.data import DataLoader
 
 import pytorch_lightning as pl
+from pytorch_lightning import seed_everything
 
 from system import I2T
 from dataset import I2TDataset, prepare_metadata, get_train_val
+
+from hydra.utils import instantiate
 
 import logging
 logger = logging.getLogger(__name__)
 
 def train(cfg: DictConfig):
+    seed_everything(42, workers=True)
+
     metadata = prepare_metadata(**cfg.data.metadata)
 
-    train_dataset, val_dataset = get_train_val(metadata, cfg)
+    tokenizer = instantiate(cfg.tokenizer)
+
+    train_dataset, val_dataset = get_train_val(metadata, tokenizer, cfg)
 
     dataloader_workers = cfg.data.dataloader_workers
 
@@ -41,6 +48,7 @@ def train(cfg: DictConfig):
         **cfg.train.trainer_params
     )
 
+    # pass tokenizer
     model = I2T(config=cfg)
 
     trainer.fit(
