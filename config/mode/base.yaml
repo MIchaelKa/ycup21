@@ -1,5 +1,5 @@
 dataset_size: 26617 # null to use everything
 batch_size_train: 32
 batch_size_val: 32
-max_epochs: 2
-log_every_n_steps: 1
+max_epochs: 50
+log_every_n_steps: 10

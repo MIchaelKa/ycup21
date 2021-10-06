@@ -1,0 +1,5 @@
+dataset_size: 5000 # null to use everything
+batch_size_train: 16
+batch_size_val: 4
+max_epochs: 2
+log_every_n_steps: 10

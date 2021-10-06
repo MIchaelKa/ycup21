@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 
 import pytorch_lightning as pl
 from pytorch_lightning import seed_everything
+from pytorch_lightning.callbacks import EarlyStopping
 
 from system import I2T
 from dataset import I2TDataset, prepare_metadata, get_train_val
@@ -44,8 +45,17 @@ def train(cfg: DictConfig):
 
     logger.info(f'dataloader size, train: {len(train_dataloader)}, valid: {len(val_dataloader)}')
 
+    early_stopping = EarlyStopping(
+        monitor='val/nce',
+        patience=3,
+        verbose=True,
+        mode='min',
+        strict=True
+    )
+
     trainer = pl.Trainer(
-        **cfg.train.trainer_params
+        **cfg.train.trainer_params,
+        callbacks=[early_stopping]
     )
 
     # pass tokenizer

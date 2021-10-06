@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 @hydra.main(config_path="config", config_name="base")
 def main(cfg: DictConfig) -> None:
-    print(OmegaConf.to_yaml(cfg))
+    # print(OmegaConf.to_yaml(cfg))
     train(cfg)
     logger.info("output directory : {}".format(os.getcwd()))
     

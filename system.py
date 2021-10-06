@@ -31,16 +31,17 @@ class I2T(pl.LightningModule):
     def validation_step(self, batch: Dict, batch_idx: int) -> Dict:
         return self.step_model(self(batch), mode='val')
 
-    def validation_epoch_end(self, batch):
-        print(batch)
+    # def validation_epoch_end(self, batch):
+    #     print(batch)
 
     def step_model(self, local_outputs: Dict[str, torch.Tensor], mode: str) -> Dict:
         temperature = 0.01
         logits = self.gather_logits(local_outputs) / temperature
         losses = self.calculate_loss(logits)
         metrics = self.calculate_metrics(logits)
-        self.log_dict({f'{mode}/{name}': value for name, value in losses.items()}, on_step=True, on_epoch=True)
-        self.log_dict({f'{mode}/{name}': value for name, value in metrics.items()}, on_step=True, on_epoch=True)
+        # on_step=True, on_epoch=True
+        self.log_dict({f'{mode}/{name}': value for name, value in losses.items()})
+        self.log_dict({f'{mode}/{name}': value for name, value in metrics.items()})
         return {'loss': losses['nce']}
 
     def gather_logits(self, local_outputs: Dict[str, torch.Tensor]) -> torch.Tensor:

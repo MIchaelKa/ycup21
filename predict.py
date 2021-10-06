@@ -93,6 +93,7 @@ def main(
     else:
         datasets = os.listdir(data_directory)
         datasets.remove('.DS_Store')
+        datasets.remove('._.DS_Store')    
 
     results = {}
     for dataset in datasets:
