@@ -28,10 +28,10 @@ def get_image_transform(randomize: bool):
         ])
     else:
         return transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
+            # transforms.Resize(256),
+            # transforms.CenterCrop(224),
             transforms.ToTensor(),
-            normalize
+            # normalize
         ])
 
 def text_collate_fn(items):
@@ -112,7 +112,8 @@ class I2TDataset(Dataset):
             text = np.random.choice(texts)
         else:
             text = texts[0]
-        return {'image': img, 'text': self.tokenizer.encode_ids(text)}
+        # return {'image': img, 'text': self.tokenizer.encode_ids(text)}
+        return {'image': img, 'text': texts}
 
     @staticmethod
     def collate_fn(items):
