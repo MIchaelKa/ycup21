@@ -29,6 +29,7 @@ class I2TInferer(object):
     ):
         ckpt = torch.load(ckpt_path, map_location='cpu')
         cfg = OmegaConf.create(ckpt['hyper_parameters'])
+        print(cfg.tokenizer)
         self.tokenizer = instantiate(cfg.tokenizer)
         self.image_transform = get_image_transform(randomize=False)
         model = I2T(config=cfg)
@@ -93,7 +94,7 @@ def main(
     else:
         datasets = os.listdir(data_directory)
         datasets.remove('.DS_Store')
-        datasets.remove('._.DS_Store')    
+        # datasets.remove('._.DS_Store')    
 
     results = {}
     for dataset in datasets:

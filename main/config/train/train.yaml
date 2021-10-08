@@ -6,6 +6,6 @@ trainer_params:
   precision: 32
   deterministic: True
   num_sanity_val_steps: 0
-  checkpoint_callback: False
+  # checkpoint_callback: False
   max_epochs: ${mode.max_epochs}
   log_every_n_steps: ${mode.log_every_n_steps}

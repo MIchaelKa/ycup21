@@ -1,0 +1,7 @@
+_target_: bpemb.BPEmb
+model_file: null
+emb_file: null
+segmentation_only: False
+lang: 'ru'
+dim: 200
+vs: 200000

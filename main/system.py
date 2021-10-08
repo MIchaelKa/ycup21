@@ -7,6 +7,9 @@ from omegaconf import DictConfig
 
 from typing import List, Dict, Tuple
 
+import logging
+logger = logging.getLogger(__name__)
+
 class I2T(pl.LightningModule):
     def __init__(self, config: DictConfig):
         super().__init__()
@@ -31,8 +34,17 @@ class I2T(pl.LightningModule):
     def validation_step(self, batch: Dict, batch_idx: int) -> Dict:
         return self.step_model(self(batch), mode='val')
 
-    # def validation_epoch_end(self, batch):
-    #     print(batch)
+    def on_epoch_start(self):
+        print('\n')
+
+    def validation_epoch_end(self, batch):
+        # print(batch)
+        print('\n')
+
+    # call insted of log_dict and disable progress bar?
+    def my_log_dict(self, mode, dict):
+        self.log_dict({f'{mode}/{name}': value for name, value in dict.items()}, on_step=True, on_epoch=True)
+        logger.info(f'my_log_dict: {dict}')
 
     def step_model(self, local_outputs: Dict[str, torch.Tensor], mode: str) -> Dict:
         temperature = 0.01

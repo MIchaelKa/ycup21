@@ -8,7 +8,7 @@ from pytorch_lightning import seed_everything
 from pytorch_lightning.callbacks import EarlyStopping
 
 from system import I2T
-from dataset import I2TDataset, prepare_metadata, get_train_val
+from dataset import prepare_metadata, get_train_val
 
 from hydra.utils import instantiate
 

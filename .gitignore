@@ -6,3 +6,6 @@ pth/
 outputs/
 contest/data
 /data/
+/main/checkpoints
+/main/tokenizers
+/main/wheels
