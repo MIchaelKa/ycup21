@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 
 import pytorch_lightning as pl
 from pytorch_lightning import seed_everything
-from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 
 from system import I2T
 from dataset import prepare_metadata, get_train_val
@@ -53,9 +53,14 @@ def train(cfg: DictConfig):
         strict=True
     )
 
+    checkpoint_callback = ModelCheckpoint(
+        monitor='val/nce',
+        mode='min'
+    )
+
     trainer = pl.Trainer(
         **cfg.train.trainer_params,
-        callbacks=[early_stopping]
+        callbacks=[early_stopping, checkpoint_callback]
     )
 
     # pass tokenizer
