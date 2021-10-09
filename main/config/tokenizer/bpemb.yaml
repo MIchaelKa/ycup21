@@ -1,4 +1,4 @@
-_target_: bpemb.BPEmb
+_target_: dataset.BPEmbTokenizer
 model_file: null
 emb_file: null
 segmentation_only: False

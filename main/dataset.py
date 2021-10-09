@@ -12,6 +12,7 @@ import json
 from hydra.utils import instantiate
 
 import transformers
+from bpemb import BPEmb
 
 import logging
 logger = logging.getLogger(__name__)
@@ -97,8 +98,10 @@ class BERTTokenizer():
             text,
             # return_tensors='pt',
             # stride
-            pad_to_max_length=True,
-            max_length=10
+            # pad_to_max_length=True,
+            truncation='longest_first',
+            padding='max_length',
+            max_length=20
         )
 
         input_ids = inputs['input_ids']
@@ -109,6 +112,9 @@ class BERTTokenizer():
             'attention_mask': torch.tensor(attention_mask)
         }
 
+class BPEmbTokenizer(BPEmb):
+    def __call__(self, text):
+        return self.encode_ids(text)
 
 class I2TDataset(Dataset):
     def __init__(

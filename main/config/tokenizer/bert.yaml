@@ -1,2 +1,2 @@
 _target_: dataset.BERTTokenizer
-model_name: 'distilbert-base-uncased'
+model_name: ${model.text.encoder.model_name}

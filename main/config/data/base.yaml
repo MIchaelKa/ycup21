@@ -1,4 +1,6 @@
 dataloader_workers: ${path.dataloader_workers}
+collate_fn: True
+
 split_ratio: 0.9
 
 metadata:
