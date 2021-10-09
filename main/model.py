@@ -9,6 +9,8 @@ from torch import nn
 from bpemb import BPEmb
 from segmentation_models_pytorch.encoders import get_encoder
 
+import transformers
+
 class ModalityEncoder(nn.Module):
     """Simple wrapper around encoder, adds output projection layer.
     """
@@ -47,6 +49,18 @@ class ImageModel(nn.Module):
         x = self.avgpool(x)
         return torch.flatten(x, start_dim=1)
 
+
+class BERTModel(nn.Module):
+    def __init__(self, model_name):
+        super().__init__()
+
+        self.model = transformers.AutoModel.from_pretrained(model_name)
+        self.output_dim = self.model.config.hidden_size
+
+    def forward(self, text_data):
+        outputs = self.model(**text_data)
+        avg_pool = torch.mean(outputs.last_hidden_state, 1)
+        return avg_pool
 
 class TextModel(nn.Module):
     """Simple BoW-based text encoder.

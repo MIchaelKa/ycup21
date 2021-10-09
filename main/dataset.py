@@ -11,6 +11,8 @@ import json
 
 from hydra.utils import instantiate
 
+import transformers
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -85,6 +87,29 @@ def get_train_val(metadata, tokenizer, cfg):
 
     return train_dataset, val_dataset
 
+class BERTTokenizer():
+    def __init__(self, model_name):
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+
+    def __call__(self, text):
+
+        inputs = self.tokenizer(
+            text,
+            # return_tensors='pt',
+            # stride
+            pad_to_max_length=True,
+            max_length=10
+        )
+
+        input_ids = inputs['input_ids']
+        attention_mask = inputs['attention_mask']
+
+        return {
+            'input_ids': torch.tensor(input_ids),
+            'attention_mask': torch.tensor(attention_mask)
+        }
+
+
 class I2TDataset(Dataset):
     def __init__(
         self,
@@ -112,7 +137,8 @@ class I2TDataset(Dataset):
             text = np.random.choice(texts)
         else:
             text = texts[0]
-        return {'image': img, 'text': self.tokenizer.encode_ids(text)}
+        # return self.tokenizer(text)
+        return {'image': img, 'text': self.tokenizer(text)}
         # return {'image': img, 'text': texts}
 
     @staticmethod

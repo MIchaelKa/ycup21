@@ -29,7 +29,7 @@ def train(cfg: DictConfig):
     train_dataloader = DataLoader(
         train_dataset,
         batch_size=cfg.train.batch_size_train,
-        collate_fn=train_dataset.collate_fn,
+        # collate_fn=train_dataset.collate_fn,
         shuffle=True,
         num_workers=dataloader_workers,
         drop_last=True
@@ -37,7 +37,7 @@ def train(cfg: DictConfig):
     val_dataloader = DataLoader(
         val_dataset,
         batch_size=cfg.train.batch_size_val,
-        collate_fn=val_dataset.collate_fn,
+        # collate_fn=val_dataset.collate_fn,
         shuffle=False,
         num_workers=dataloader_workers,
         drop_last=False
@@ -58,9 +58,14 @@ def train(cfg: DictConfig):
         mode='min'
     )
 
+    callbacks=[early_stopping]
+
+    if cfg.train.trainer_params.checkpoint_callback:
+        callbacks.append(checkpoint_callback)
+
     trainer = pl.Trainer(
         **cfg.train.trainer_params,
-        callbacks=[early_stopping, checkpoint_callback]
+        callbacks=callbacks
     )
 
     # pass tokenizer

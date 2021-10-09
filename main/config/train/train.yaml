@@ -3,9 +3,11 @@ batch_size_val: ${mode.batch_size_val}
 
 trainer_params:
   gpus: 0
-  precision: 16
+  # precision: 16
   deterministic: True
   num_sanity_val_steps: 0
   checkpoint_callback: False
   max_epochs: ${mode.max_epochs}
   log_every_n_steps: ${mode.log_every_n_steps}
+
+# resume_from_checkpoint: ${ckpt_directory}/last.ckpt
