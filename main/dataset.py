@@ -89,8 +89,9 @@ def get_train_val(metadata, tokenizer, cfg):
     return train_dataset, val_dataset
 
 class BERTTokenizer():
-    def __init__(self, model_name):
+    def __init__(self, model_name, max_length):
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+        self.max_length = max_length
 
     def __call__(self, text):
 
@@ -101,7 +102,7 @@ class BERTTokenizer():
             # pad_to_max_length=True,
             truncation='longest_first',
             padding='max_length',
-            max_length=20
+            max_length=self.max_length
         )
 
         input_ids = inputs['input_ids']

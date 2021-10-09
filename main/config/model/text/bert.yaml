@@ -3,5 +3,8 @@ output_dim: ${model.joint_dim}
 normalize: True
 encoder:
   _target_: model.BERTModel
-  model_name: 'distilrubert-base-cased-conversational' # xlm-roberta-base distilbert-base-uncased
-  
+  model_name: 'xlm-roberta-base'
+
+# xlm-roberta-base
+# distilbert-base-uncased
+# distilrubert-base-cased-conversational

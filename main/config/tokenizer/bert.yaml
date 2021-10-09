@@ -1,2 +1,3 @@
 _target_: dataset.BERTTokenizer
 model_name: ${model.text.encoder.model_name}
+max_length: 10

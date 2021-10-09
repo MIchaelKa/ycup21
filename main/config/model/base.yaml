@@ -10,4 +10,4 @@ image:
     weights: imagenet
 
 defaults:
-  - text: bert
+  - text: baseline
