@@ -41,11 +41,18 @@ class I2TInferer(object):
         self.img_collate_fn = default_collate
         self.device = device
         
-    def encode_texts(self, texts: Iterable[str]) -> torch.Tensor:
-        ids = [self.tokenizer.encode_ids(text) for text in texts]
-        texts_torch = self.text_collate_fn(ids)
-        texts_torch['ids'] = texts_torch['ids'].to(self.device)
-        texts_torch['offsets'] = texts_torch['offsets'].to(self.device)
+    # def encode_texts(self, texts: Iterable[str]) -> torch.Tensor:
+    #     ids = [self.tokenizer.encode_ids(text) for text in texts]
+    #     texts_torch = self.text_collate_fn(ids)
+    #     texts_torch['ids'] = texts_torch['ids'].to(self.device)
+    #     texts_torch['offsets'] = texts_torch['offsets'].to(self.device)
+    #     return self.model.encoders['text'](texts_torch).cpu().detach()
+
+    def encode_texts(self, texts):
+        ids = [self.tokenizer(text) for text in texts]
+        texts_torch = default_collate(ids)
+        texts_torch['input_ids'] = texts_torch['input_ids'].to(self.device)
+        texts_torch['attention_mask'] = texts_torch['attention_mask'].to(self.device)    
         return self.model.encoders['text'](texts_torch).cpu().detach()
     
     def encode_images(self, images: Iterable[Image.Image]) -> torch.Tensor:
