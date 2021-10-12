@@ -9,5 +9,6 @@ trainer_params:
   checkpoint_callback: False
   max_epochs: ${mode.max_epochs}
   log_every_n_steps: ${mode.log_every_n_steps}
+  # val_check_interval: 0.5
 
 # resume_from_checkpoint: ${ckpt_directory}/last.ckpt

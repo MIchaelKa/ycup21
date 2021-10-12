@@ -5,9 +5,13 @@ from torch.utils.data._utils.collate import default_collate
 
 import os
 import numpy as np
-from PIL import Image
 from pathlib import Path
 import json
+
+from PIL import Image
+from PIL import UnidentifiedImageError
+
+from tqdm import tqdm
 
 from hydra.utils import instantiate
 
@@ -50,22 +54,38 @@ def text_collate_fn(items):
 
 def prepare_metadata(
     metadata_directory,
+    images_directory,
     dataset_size=None,
     ):
 
     data = []
-
-    # id_to_remove.npy  index_to_remove.npy
-    id_to_remove = np.load(os.path.join(metadata_directory, 'id_to_remove.npy'))
-
+    image_names = os.listdir(images_directory)
     metadata_file = os.path.join(metadata_directory, 'metadata.json')
+
+    logger.info(f'image dir size: {len(image_names)}')
+    logger.info('detecting problem files...')
+
+    problem_files = []
+    for im_name in tqdm(image_names):
+        image_path = f'{images_directory}/{im_name}'
+        try:
+            img = Image.open(image_path)
+        except UnidentifiedImageError:
+            problem_files.append(im_name)
+
+    logger.info(f'problem files: {len(problem_files)}')
+
+    for file_name in problem_files:
+        image_names.remove(file_name)
 
     with open(metadata_file) as json_file:
         json_strings = json_file.readlines()
-    for json_string in json_strings[:dataset_size]:
+
+    for json_string in tqdm(json_strings[:dataset_size]):
         metadata = json.loads(json_string)
         image = metadata['image']
-        if image not in id_to_remove:
+        image_name = f'image_{image}.jpg'
+        if image_name in image_names:
             data.append((metadata['image'], metadata['queries']))
 
     logger.info(f'metadata size: {len(data)}')
