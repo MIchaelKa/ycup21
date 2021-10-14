@@ -2,7 +2,6 @@ _target_: ${model.modality_encoder}
 output_dim: ${model.joint_dim}
 normalize: ${model.normalize}
 encoder:
-  _target_: model.TextModel
-  hidden_size: 200
-  hidden_layers: 5
-  pretrained_bpemb_embeddings: True
+  _target_: model.ImageModel
+  encoder_name: resnet50
+  weights: imagenet

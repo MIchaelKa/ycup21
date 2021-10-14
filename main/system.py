@@ -29,10 +29,10 @@ class I2T(pl.LightningModule):
         }
 
     def training_step(self, batch: Dict, batch_idx: int) -> Dict:
-        return self.step_model(self(batch), mode='train')
+        return self.step_model_vae(self(batch), mode='train')
 
     def validation_step(self, batch: Dict, batch_idx: int) -> Dict:
-        return self.step_model(self(batch), mode='val')
+        return self.step_model_vae(self(batch), mode='val')
 
     def on_epoch_start(self):
         print('\n')
@@ -45,6 +45,42 @@ class I2T(pl.LightningModule):
     def my_log_dict(self, mode, dict):
         self.log_dict({f'{mode}/{name}': value for name, value in dict.items()}, on_step=True, on_epoch=True)
         logger.info(f'my_log_dict: {dict}')
+
+    def kl_div_loss(self, z_mu, z_log_var):
+        kl_div = -0.5 * torch.sum(1 + z_log_var - z_mu**2 - torch.exp(z_log_var), axis=1) # sum over latent dimension
+        kl_div = kl_div.mean() # average over batch dimension
+
+        # kl_loss = (-0.5 * (1 + z_log_var - z_mu**2 - torch.exp(z_log_var)).sum(dim = 1)).mean(dim = 0)
+        
+        return kl_div
+
+    def step_model_vae(self, local_outputs: Dict[str, torch.Tensor], mode: str) -> Dict:
+        temperature = 0.01
+
+        image_features, image_z_mean, image_z_log_var = local_outputs['image']
+        text_features, text_z_mean, text_z_log_var = local_outputs['text']
+
+        logits = (image_features @ text_features.T) / temperature
+
+        nce_losses = self.calculate_loss(logits)
+        metrics = self.calculate_metrics(logits)
+
+        image_kl_loss = self.kl_div_loss(image_z_mean, image_z_log_var)
+        text_kl_loss = self.kl_div_loss(text_z_mean, text_z_log_var)
+
+        alpha = 1.0
+
+        loss = alpha * nce_losses['nce'] + image_kl_loss + text_kl_loss
+
+        # print(nce_losses['nce'], image_kl_loss, text_kl_loss)
+
+        self.log_dict({f'{mode}/{name}': value for name, value in nce_losses.items()})
+        self.log_dict({f'{mode}/{name}': value for name, value in metrics.items()})
+        self.log(f'{mode}/image_kl_loss', image_kl_loss)
+        self.log(f'{mode}/text_kl_loss', image_kl_loss)
+        self.log(f'{mode}/loss', loss)
+
+        return {'loss': loss}
 
     def step_model(self, local_outputs: Dict[str, torch.Tensor], mode: str) -> Dict:
         temperature = 0.01

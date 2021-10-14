@@ -1,6 +1,6 @@
-_target_: model.ModalityEncoder
+_target_: ${model.modality_encoder}
 output_dim: ${model.joint_dim}
-normalize: True
+normalize: ${model.normalize}
 encoder:
   _target_: model.BERTModel
   model_name: 'DeepPavlov/distilrubert-tiny-cased-conversational'

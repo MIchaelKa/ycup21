@@ -1,5 +1,5 @@
 joint_dim: 128
-modality_encoder: model.ModalityEncoder
+modality_encoder: model.VariationalModalityEncoder
 normalize: True
 
 defaults:

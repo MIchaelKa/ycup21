@@ -30,6 +30,36 @@ class ModalityEncoder(nn.Module):
         projected_features = self.projector(features)
         return self.normalize(projected_features)
 
+class VariationalModalityEncoder(nn.Module):
+    def __init__(
+        self,
+        encoder,
+        output_dim: int,
+        normalize: bool = True
+    ):
+        super().__init__()
+        self.encoder = encoder
+
+        self.fc_mean = torch.nn.Linear(self.encoder.output_dim, output_dim)
+        self.fc_log_var = torch.nn.Linear(self.encoder.output_dim, output_dim)
+
+        self.normalize = nn.functional.normalize if normalize else (lambda x: x)
+
+    def reparameterize(self, z_mu, z_log_var):
+        eps = torch.randn(z_mu.size(0), z_mu.size(1))#.to(z_mu.get_device())
+        # print(f'eps: ', eps.shape)
+        z = z_mu + eps * torch.exp(z_log_var/2.) 
+        return z
+    
+    def forward(self, *args, **kwargs):
+        features = self.encoder(*args, **kwargs)
+
+        z_mean = self.fc_mean(features)
+        z_log_var = self.fc_log_var(features)
+
+        z = self.reparameterize(z_mean, z_log_var)
+
+        return self.normalize(z), z_mean, z_log_var
 
 class ImageModel(nn.Module):
     """Thin wrapper around SMP encoders.
