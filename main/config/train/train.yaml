@@ -1,5 +1,6 @@
 batch_size_train: ${mode.batch_size_train}
 batch_size_val: ${mode.batch_size_val}
+monitor: 'val/nce' # val/nce, val/loss
 
 trainer_params:
   gpus: 0
@@ -10,5 +11,10 @@ trainer_params:
   max_epochs: ${mode.max_epochs}
   log_every_n_steps: ${mode.log_every_n_steps}
   # val_check_interval: 0.5
+
+checkpoint_callback:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  monitor: ${train.monitor}
+  mode: 'min'
 
 # resume_from_checkpoint: ${ckpt_directory}/last.ckpt

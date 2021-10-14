@@ -53,7 +53,7 @@ class I2TInferer(object):
         texts_torch = default_collate(ids)
         texts_torch['input_ids'] = texts_torch['input_ids'].to(self.device)
         texts_torch['attention_mask'] = texts_torch['attention_mask'].to(self.device)    
-        return self.model.encoders['text'](texts_torch).cpu().detach()
+        return self.model.encoders['text'].encode(texts_torch).cpu().detach()
     
     def encode_images(self, images: Iterable[Image.Image]) -> torch.Tensor:
         pbar = tqdm()
@@ -61,7 +61,7 @@ class I2TInferer(object):
         for chunk in more_itertools.chunked(images, 10):
             images = [self.image_transform(x.convert('RGB')) for x in chunk]
             images_torch = self.img_collate_fn(images).to(self.device)
-            chunk_image_features = self.model.encoders['image'](images_torch).cpu().detach()
+            chunk_image_features = self.model.encoders['image'].encode(images_torch).cpu().detach()
             image_features.append(chunk_image_features)
             pbar.update(len(chunk))
         pbar.close()

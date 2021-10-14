@@ -50,21 +50,17 @@ def train(cfg: DictConfig):
     logger.info(f'dataloader size, train: {len(train_dataloader)}, valid: {len(val_dataloader)}')
 
     early_stopping = EarlyStopping(
-        monitor='val/nce',
+        monitor=cfg.train.monitor,
         patience=3,
         verbose=True,
         mode='min',
         strict=True
     )
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor='val/nce',
-        mode='min'
-    )
-
     callbacks=[early_stopping]
 
     if cfg.train.trainer_params.checkpoint_callback:
+        checkpoint_callback = instantiate(cfg.train.checkpoint_callback)
         callbacks.append(checkpoint_callback)
 
     trainer = pl.Trainer(

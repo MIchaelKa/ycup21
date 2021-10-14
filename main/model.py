@@ -30,6 +30,9 @@ class ModalityEncoder(nn.Module):
         projected_features = self.projector(features)
         return self.normalize(projected_features)
 
+    def encode(self, *args, **kwargs):
+        return forward(args, kwargs)
+
 class VariationalModalityEncoder(nn.Module):
     def __init__(
         self,
@@ -46,9 +49,9 @@ class VariationalModalityEncoder(nn.Module):
         self.normalize = nn.functional.normalize if normalize else (lambda x: x)
 
     def reparameterize(self, z_mu, z_log_var):
-        eps = torch.randn(z_mu.size(0), z_mu.size(1))#.to(z_mu.get_device())
+        eps = torch.randn(z_mu.size(0), z_mu.size(1)).to(z_mu.get_device())
         # print(f'eps: ', eps.shape)
-        z = z_mu + eps * torch.exp(z_log_var/2.) 
+        z = z_mu + eps * torch.exp(z_log_var/2.)
         return z
     
     def forward(self, *args, **kwargs):
@@ -60,6 +63,11 @@ class VariationalModalityEncoder(nn.Module):
         z = self.reparameterize(z_mean, z_log_var)
 
         return self.normalize(z), z_mean, z_log_var
+    
+    def encode(self, *args, **kwargs):
+        features = self.encoder(*args, **kwargs)
+        z_mean = self.fc_mean(features)
+        return self.normalize(z_mean)
 
 class ImageModel(nn.Module):
     """Thin wrapper around SMP encoders.
@@ -88,7 +96,7 @@ class BERTModel(nn.Module):
         hidden_size = self.model.config.hidden_size
         self.output_dim = 512
 
-        self.dropout = nn.Dropout(dropout)
+        # self.dropout = nn.Dropout(dropout)
 
         self.linear = nn.Linear(hidden_size * 2, self.output_dim) 
 
@@ -98,9 +106,10 @@ class BERTModel(nn.Module):
         
         avg_pool = torch.mean(last_hidden_state, 1)
         max_pool, _ = torch.max(last_hidden_state, 1)
-        cat_pool = torch.cat((avg_pool, max_pool), 1)
 
-        output = self.dropout(cat_pool)
+        output = torch.cat((avg_pool, max_pool), 1)
+
+        # output = self.dropout(output)
         output = self.linear(output)
 
         return output

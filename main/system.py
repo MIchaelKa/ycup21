@@ -68,9 +68,9 @@ class I2T(pl.LightningModule):
         image_kl_loss = self.kl_div_loss(image_z_mean, image_z_log_var)
         text_kl_loss = self.kl_div_loss(text_z_mean, text_z_log_var)
 
-        alpha = 1.0
+        alpha = 0.95
 
-        loss = alpha * nce_losses['nce'] + image_kl_loss + text_kl_loss
+        loss = alpha * nce_losses['nce'] + (1 - alpha) * (image_kl_loss + text_kl_loss)
 
         # print(nce_losses['nce'], image_kl_loss, text_kl_loss)
 
