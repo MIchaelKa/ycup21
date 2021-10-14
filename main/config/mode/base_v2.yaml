@@ -1,4 +1,4 @@
-dataset_size: 26617
+dataset_size: 80000
 batch_size_train: 32
 batch_size_val: 32
 max_epochs: 50

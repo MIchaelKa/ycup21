@@ -4,6 +4,7 @@ normalize: True
 encoder:
   _target_: model.BERTModel
   model_name: 'DeepPavlov/distilrubert-tiny-cased-conversational'
+  dropout: 0.3
 
 # DeepPavlov/distilrubert-tiny-cased-conversational
 # xlm-roberta-base

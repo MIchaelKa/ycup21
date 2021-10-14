@@ -51,23 +51,28 @@ class ImageModel(nn.Module):
 
 
 class BERTModel(nn.Module):
-    def __init__(self, model_name):
+    def __init__(self, model_name, dropout):
         super().__init__()
 
         self.model = transformers.AutoModel.from_pretrained(model_name)
         hidden_size = self.model.config.hidden_size
         self.output_dim = 512
 
+        self.dropout = nn.Dropout(dropout)
+
         self.linear = nn.Linear(hidden_size * 2, self.output_dim) 
 
     def forward(self, text_data):
         outputs = self.model(**text_data)
         last_hidden_state = outputs.last_hidden_state
+        
         avg_pool = torch.mean(last_hidden_state, 1)
         max_pool, _ = torch.max(last_hidden_state, 1)
         cat_pool = torch.cat((avg_pool, max_pool), 1)
 
-        output = self.linear(cat_pool)
+        output = self.dropout(cat_pool)
+        output = self.linear(output)
+
         return output
 
 class TextModel(nn.Module):
