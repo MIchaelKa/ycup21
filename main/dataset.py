@@ -157,6 +157,7 @@ class I2TDataset(Dataset):
 
     def __getitem__(self, idx: int):
         img, texts = self.data[idx]
+        image_name = f'image_{img}.jpg'
         img = Image.open((self.images_directory / f'image_{img}').with_suffix('.jpg'))
         img = img.convert('RGB')
         img = self.image_transform(img)
@@ -164,8 +165,9 @@ class I2TDataset(Dataset):
             text = np.random.choice(texts)
         else:
             text = texts[0]
+        
         # return self.tokenizer(text)
-        return {'image': img, 'text': self.tokenizer(text)}
+        return {'image_name': image_name, 'image': img, 'text': self.tokenizer(text)}
         # return {'image': img, 'text': texts}
 
     @staticmethod

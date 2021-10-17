@@ -29,7 +29,7 @@ class I2T(pl.LightningModule):
         }
 
     def training_step(self, batch: Dict, batch_idx: int) -> Dict:
-        return self.step_model_vae(self(batch), mode='train')
+        return self.step_model_distance(self(batch), mode='train')
 
     def validation_step(self, batch: Dict, batch_idx: int) -> Dict:
         return self.step_model_vae(self(batch), mode='val')
@@ -91,6 +91,15 @@ class I2T(pl.LightningModule):
         self.log_dict({f'{mode}/{name}': value for name, value in losses.items()})
         self.log_dict({f'{mode}/{name}': value for name, value in metrics.items()})
         return {'loss': losses['nce']}
+
+    def step_model_distance(self, local_outputs: Dict[str, torch.Tensor], mode: str) -> Dict:
+
+        image_features = local_outputs['image']
+        text_features = local_outputs['text']
+
+        logits = image_features @ text_features.T
+
+        return logits.diag()
 
     def gather_logits(self, local_outputs: Dict[str, torch.Tensor]) -> torch.Tensor:
         image_features = local_outputs['image']
