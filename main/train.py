@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 
 import pytorch_lightning as pl
 from pytorch_lightning import seed_everything
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.callbacks import EarlyStopping, BaseFinetuning
 
 from system import I2T
 from dataset import prepare_metadata, get_train_val
@@ -13,6 +13,27 @@ from hydra.utils import instantiate
 
 import logging
 logger = logging.getLogger(__name__)
+
+import torch
+
+class FeatureExtractorFreezeUnfreeze(BaseFinetuning):
+
+    def __init__(self, unfreeze_at_epoch=5):
+        self._unfreeze_at_epoch = unfreeze_at_epoch
+
+    def freeze_before_training(self, pl_module):
+        logger.info(f'freeze_before_training')
+        self.freeze(pl_module.encoders.image)
+
+    def finetune_function(self, pl_module, current_epoch, optimizer, optimizer_idx):
+        logger.info(f'finetune_function: {current_epoch}')
+        # When `current_epoch` is 10, feature_extractor will start training.
+        if current_epoch == self._unfreeze_at_epoch:
+            self.unfreeze_and_add_param_group(
+                modules=pl_module.encoders.image,
+                optimizer=optimizer,
+                train_bn=True,
+            )
 
 def train(cfg: DictConfig):
     seed_everything(42, workers=True)
@@ -57,6 +78,8 @@ def train(cfg: DictConfig):
         strict=True
     )
 
+    # freeze = FeatureExtractorFreezeUnfreeze()
+
     callbacks=[early_stopping]
 
     if cfg.train.trainer_params.checkpoint_callback:
@@ -68,8 +91,14 @@ def train(cfg: DictConfig):
         callbacks=callbacks
     )
 
-    # pass tokenizer
     model = I2T(config=cfg)
+
+    ckpt_path = '/content/drive/MyDrive/ai/ycup21/checkpoints/baseline_image_encoder.ckpt'
+    ckpt = torch.load(ckpt_path, map_location='cpu')
+    model.encoders.image.load_state_dict(ckpt)
+
+    for param in model.encoders.image.parameters():
+        param.requires_grad = False
 
     trainer.fit(
         train_dataloaders=train_dataloader,

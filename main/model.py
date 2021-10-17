@@ -31,7 +31,7 @@ class ModalityEncoder(nn.Module):
         return self.normalize(projected_features)
 
     def encode(self, *args, **kwargs):
-        return self.forward(args, kwargs)
+        return self.forward(*args, **kwargs)
 
 class VariationalModalityEncoder(nn.Module):
     def __init__(

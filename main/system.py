@@ -30,10 +30,10 @@ class I2T(pl.LightningModule):
         }
 
     def training_step(self, batch: Dict, batch_idx: int) -> Dict:
-        return self.step_model_arc_face(self(batch), mode='train')
+        return self.step_model(self(batch), mode='train')
 
     def validation_step(self, batch: Dict, batch_idx: int) -> Dict:
-        return self.step_model_arc_face(self(batch), mode='val')
+        return self.step_model(self(batch), mode='val')
 
     def on_epoch_start(self):
         print('\n')
@@ -140,4 +140,6 @@ class I2T(pl.LightningModule):
 
     def configure_optimizers(self):
         learning_rate = 1e-4
-        return torch.optim.Adam(self.parameters(), lr=learning_rate)
+        
+        return torch.optim.Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=learning_rate)
+        # return torch.optim.Adam(self.parameters(), lr=learning_rate)
