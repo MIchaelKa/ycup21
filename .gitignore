@@ -9,3 +9,4 @@ contest/data
 /main/checkpoints
 /main/tokenizers
 /main/wheels
+/checkpoints/

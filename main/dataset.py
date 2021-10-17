@@ -167,8 +167,9 @@ class I2TDataset(Dataset):
             text = texts[0]
         
         # return self.tokenizer(text)
-        return {'image_name': image_name, 'image': img, 'text': self.tokenizer(text)}
+        # return {'image_name': image_name, 'image': img, 'text': self.tokenizer(text)}
         # return {'image': img, 'text': texts}
+        return {'image': img, 'text': self.tokenizer(text)}
 
     @staticmethod
     def collate_fn(items):

@@ -1,6 +1,7 @@
 import pytorch_lightning as pl
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 from hydra.utils import instantiate
 from omegaconf import DictConfig
@@ -29,10 +30,10 @@ class I2T(pl.LightningModule):
         }
 
     def training_step(self, batch: Dict, batch_idx: int) -> Dict:
-        return self.step_model_distance(self(batch), mode='train')
+        return self.step_model_arc_face(self(batch), mode='train')
 
     def validation_step(self, batch: Dict, batch_idx: int) -> Dict:
-        return self.step_model_vae(self(batch), mode='val')
+        return self.step_model_arc_face(self(batch), mode='val')
 
     def on_epoch_start(self):
         print('\n')
@@ -82,6 +83,28 @@ class I2T(pl.LightningModule):
 
         return {'loss': loss}
 
+    def step_model_distance(self, local_outputs: Dict[str, torch.Tensor], mode: str) -> Dict:
+        image_features = local_outputs['image']
+        text_features = local_outputs['text']
+        logits = image_features @ text_features.T
+        return logits.diag()
+
+    def step_model_arc_face(self, local_outputs: Dict[str, torch.Tensor], mode: str) -> Dict:
+        m=0.4
+
+        logits = self.gather_logits(local_outputs)
+        arcosine = logits.arccos()
+        labels = torch.arange(0, logits.shape[0], device=self.device)
+        arcosine += F.one_hot(labels, num_classes=logits.shape[0]) * m
+        logits = arcosine.cos()
+
+        losses = self.calculate_loss(logits)
+        metrics = self.calculate_metrics(logits)
+        # on_step=True, on_epoch=True
+        self.log_dict({f'{mode}/{name}': value for name, value in losses.items()})
+        self.log_dict({f'{mode}/{name}': value for name, value in metrics.items()})
+        return {'loss': losses['nce']}
+
     def step_model(self, local_outputs: Dict[str, torch.Tensor], mode: str) -> Dict:
         temperature = 0.01
         logits = self.gather_logits(local_outputs) / temperature
@@ -91,15 +114,6 @@ class I2T(pl.LightningModule):
         self.log_dict({f'{mode}/{name}': value for name, value in losses.items()})
         self.log_dict({f'{mode}/{name}': value for name, value in metrics.items()})
         return {'loss': losses['nce']}
-
-    def step_model_distance(self, local_outputs: Dict[str, torch.Tensor], mode: str) -> Dict:
-
-        image_features = local_outputs['image']
-        text_features = local_outputs['text']
-
-        logits = image_features @ text_features.T
-
-        return logits.diag()
 
     def gather_logits(self, local_outputs: Dict[str, torch.Tensor]) -> torch.Tensor:
         image_features = local_outputs['image']
